@@ -38,6 +38,14 @@ BlazeHub:CreateButton({
 
 
 BlazeHub:CreateButton({
+    Name = "Beamed muscle legend",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ben1x1x1x1x/V2/refs/heads/main/BeamedV2FreeLoader"))()
+    end
+})
+
+
+BlazeHub:CreateButton({
     Name = "empty",
     
 })
