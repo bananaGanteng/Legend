@@ -46,7 +46,7 @@ BlazeHub:CreateButton({
 
 
 BlazeHub:CreateButton({
-    Name = "GhostHub",
+    Name = "Beamed muscle legend",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/Test4/main/GhostHub'))()
     end
