@@ -1,0 +1,112 @@
+-- Tunggu game selesai dimuat
+repeat wait() until game:IsLoaded()
+
+local rs = game:GetService("ReplicatedStorage")
+local animalsFolder = rs:WaitForChild("Models"):WaitForChild("Animals")
+local workspace = game:GetService("Workspace")
+
+-- Buat satu part sebagai alas
+local platform = Instance.new("Part")
+platform.Name = "AnimalsPlatform"
+platform.Size = Vector3.new(200, 1, 200)
+platform.Anchored = true
+platform.Position = Vector3.new(0, 1, 0)
+platform.Transparency = 1       -- Bikin part tidak terlihat
+platform.CanCollide = false     -- Tidak bisa disentuh
+platform.CastShadow = false     -- Tidak memunculkan bayangan
+platform.Parent = workspace
+
+-- Daftar nama model yang harus dilewati
+local excludedNames = {
+	["Tung Tung Tung Sahur"] = true,
+	["Bananita Dolphinita"] = true,
+	["Odin Din Din Dun"] = true,
+	["Svinina Bombardino"] = true,
+	["Sammyni Spyderini"] = true,
+	["Trulimero Trulicina"] = true,
+	["Boneca Ambalabu"] = true,
+	["Brr Brr Patapim"] = true,
+	["La Grande Combinasion"] = true,
+	["Noobini Pizzanini"] = true,
+	["Cappuccino Assassino"] = true,
+	["La Vacca Saturno Saturnita"] = true,
+	["Chef Crabracadabra"] = true,
+	["Burbaloni Loliloli"] = true,
+	["Fluriflura"] = true,
+	["Bambini Crostini"] = true,
+	["Gangster Footera"] = true,
+	["Rhino Toasterino"] = true,
+	["Brri Brri Bicus Dicus Bombicus"] = true,
+	["Los Tralaleritos"] = true,
+	["Pipi Kiwi"] = true,
+	["Frigo Camelo"] = true,
+	["Lirilì Larilà"] = true,
+	["Blueberrinni Octopusini"] = true,
+	["Cocofanto Elefanto"] = true,
+	["Girafa Celestre"] = true,
+	["Bombombini Gusini"] = true,
+	["Ta Ta Ta Ta Sahur"] = true,
+	["Orangutini Ananassini"] = true,
+	["Talpa Di Fero"] = true,
+	["Graipuss Medussi"] = true,
+	["Tim Cheese"] = true,
+	["Tralalero Tralala"] = true,
+	["Trippi Troppi"] = true,
+	["Chimpanzini Bananini"] = true,
+	["Glorbo Fruttodrillo"] = true,
+	["Tric Trac Baraboom"] = true,
+	["Trenostruzzo Turbo 3000"] = true,
+	["Gattatino Nyanino"] = true,
+	["Perochello Lemonchello"] = true,
+	["Ballerina Cappuccina"] = true,
+	["Matteo"] = true,
+	["Unclito Samito"] = true,
+	["Garama and Madundung"] = true,
+	["Bandito Bobritto"] = true,
+	["Lionel Cactuseli"] = true,
+	["Cavallo Virtuoso"] = true,
+	["Bombardiro Crocodilo"] = true
+}
+
+-- Posisi awal meletakkan model di atas platform
+local startX = -90
+local z = 0
+local yOffset = 2 -- ketinggian model di atas platform
+local spacing = 15
+local index = 0
+
+-- Loop dan pindahkan semua model
+for _, model in ipairs(animalsFolder:GetChildren()) do
+	if model:IsA("Model") and not excludedNames[model.Name] then
+		local clone = model:Clone()
+
+		-- Set semua part di dalam model ke Anchored = true
+		for _, part in ipairs(clone:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Anchored = true
+			end
+		end
+
+		-- Atur PrimaryPart kalau belum ada
+		if not clone.PrimaryPart then
+			for _, part in ipairs(clone:GetDescendants()) do
+				if part:IsA("BasePart") then
+					clone.PrimaryPart = part
+					break
+				end
+			end
+		end
+
+		-- Jika ada PrimaryPart, posisikan model
+		if clone.PrimaryPart then
+			index += 1
+			local posX = platform.Position.X + startX + (index - 1) * spacing
+			local posY = platform.Position.Y + yOffset
+			local posZ = platform.Position.Z + z
+			clone:SetPrimaryPartCFrame(CFrame.new(posX, posY, posZ))
+		end
+
+		-- Jadikan anak dari platform
+		clone.Parent = platform
+	end
+end
