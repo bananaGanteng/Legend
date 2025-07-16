@@ -110,15 +110,15 @@ local function enableESP()
 	-- Notifikasi berhasil ditemukan atau tidak
 	if foundCount > 0 then
 		StarterGui:SetCore("SendNotification", {
-			Title = "Target Model",
-			Text = "✅ " .. foundCount .. " target model ditemukan.",
-			Duration = 10
+			Title = "Target message",
+			Text = "✅ " .. foundCount .. " target success found.",
+			Duration = 6
 		})
 	else
 		StarterGui:SetCore("SendNotification", {
-			Title = "Target Model",
-			Text = "❌ Tidak ada target model ditemukan.",
-			Duration = 10
+			Title = "Target message",
+			Text = "❌ target not found.",
+			Duration = 6
 		})
 	end
 end
