@@ -1,8 +1,8 @@
 --// ======= THEME =========
 local THEME = {
-    FrameBg        = Color3.fromRGB(38, 42, 56),
-    FrameBg2       = Color3.fromRGB(48, 52, 68),
-    Accent         = Color3.fromRGB(0, 180, 255),
+    FrameBg        = Color3.fromRGB(38, 42, 56),   -- background utama
+    FrameBg2       = Color3.fromRGB(48, 52, 68),   -- hover / header
+    Accent         = Color3.fromRGB(0, 180, 255),  -- garis / tab aktif
     AccentHover    = Color3.fromRGB(0, 205, 255),
     TabIdle        = Color3.fromRGB(70, 90, 130),
     TabActive      = Color3.fromRGB(0, 180, 255),
@@ -21,7 +21,9 @@ local UIS          = game:GetService("UserInputService")
 
 -- Bersihkan UI lama
 local OLD = CoreGui:FindFirstChild("FaDhenModernMini")
-if OLD then OLD:Destroy() end
+if OLD then
+    OLD:Destroy()
+end
 
 -- ScreenGui
 local gui = Instance.new("ScreenGui")
@@ -36,11 +38,14 @@ mainFrame.Size = UDim2.new(0, 240, 0, 250)
 mainFrame.Position = UDim2.new(0.5, -120, 0.5, -125)
 mainFrame.BackgroundColor3 = THEME.FrameBg
 mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Visible = false
+mainFrame.Draggable = true -- (tetap; tidak diubah)
+mainFrame.Visible = false -- default tertutup
 mainFrame.Parent = gui
 
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
+
 local mainStroke = Instance.new("UIStroke")
 mainStroke.Thickness = 2
 mainStroke.Color = THEME.Accent
@@ -73,7 +78,11 @@ title.TextSize = 14
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = THEME.TitleText
 title.Parent = mainFrame
-Instance.new("UICorner", title).CornerRadius = UDim.new(0, 12)
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = title
+
 local titleGradient = Instance.new("UIGradient")
 titleGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, THEME.Accent),
@@ -89,6 +98,7 @@ tabContainer.Size = UDim2.new(1, -20, 0, 28)
 tabContainer.Position = UDim2.new(0, 10, 0, 42)
 tabContainer.BackgroundTransparency = 1
 tabContainer.Parent = mainFrame
+
 local tabLayout = Instance.new("UIListLayout")
 tabLayout.FillDirection = Enum.FillDirection.Horizontal
 tabLayout.Padding = UDim.new(0, 6)
@@ -105,7 +115,8 @@ contentFrame.BackgroundTransparency = 1
 contentFrame.Parent = mainFrame
 
 -- Tabs
-local tabs, tabButtons = {}, {}
+local tabs = {}
+local tabButtons = {}
 local function createTab(name)
     local tab = Instance.new("Frame")
     tab.Name = name .. "Tab"
@@ -113,12 +124,14 @@ local function createTab(name)
     tab.BackgroundTransparency = 1
     tab.Visible = false
     tab.Parent = contentFrame
+
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 8)
     layout.VerticalAlignment = Enum.VerticalAlignment.Top
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = tab
+
     tabs[name] = tab
     return tab
 end
@@ -132,8 +145,9 @@ local function setActiveTab(name)
         tab.Visible = (tabName == name)
     end
     for tabName, btn in pairs(tabButtons) do
-        TweenService:Create(btn, TweenInfo.new(0.15),
-            {BackgroundColor3 = (tabName == name) and THEME.TabActive or THEME.TabIdle}):Play()
+        local goal = {}
+        goal.BackgroundColor3 = (tabName == name) and THEME.TabActive or THEME.TabIdle
+        TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal):Play()
     end
 end
 
@@ -163,9 +177,9 @@ local function createTabButton(text, tabName)
     tabButtons[tabName] = btn
 end
 
-createTabButton("Main", "Main")
+createTabButton("Main",   "Main")
 createTabButton("Visual", "Visual")
-createTabButton("Misc", "Misc")
+createTabButton("Misc",   "Misc")
 setActiveTab("Main")
 
 -- TOGGLE CREATOR
@@ -173,6 +187,7 @@ local function AddToggle(tab, data)
     local name     = data.Name or "Toggle"
     local callback = data.Callback
     local colorOn  = data.ColorOn or THEME.ToggleOnTrack
+
     local btn = Instance.new("TextButton")
     btn.Name = name .. "_Toggle"
     btn.Parent = tab
@@ -206,34 +221,57 @@ local function AddToggle(tab, data)
 
     local state = false
     local function animate(on)
-        TweenService:Create(dot, TweenInfo.new(0.20), {Position = on and UDim2.new(1, -15, 0.5, -7) or UDim2.new(0, 1, 0.5, -7)}):Play()
-        TweenService:Create(track, TweenInfo.new(0.20), {BackgroundColor3 = on and colorOn or THEME.ToggleOffTrack}):Play()
+        TweenService:Create(dot, TweenInfo.new(0.20, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Position = on and UDim2.new(1, -15, 0.5, -7) or UDim2.new(0, 1, 0.5, -7)}):Play()
+        TweenService:Create(track, TweenInfo.new(0.20, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundColor3 = on and colorOn or THEME.ToggleOffTrack}):Play()
     end
     btn.MouseButton1Click:Connect(function()
         state = not state
         animate(state)
         if callback then pcall(callback, state) end
     end)
-    return {Set = function(v) if typeof(v)=="boolean" and v~=state then state=v animate(state) end end, Get = function() return state end}
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.12), {BackgroundColor3 = THEME.ToggleHover}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.12), {BackgroundColor3 = THEME.ToggleBg}):Play()
+    end)
+    return {
+        Set = function(v)
+            if typeof(v)=="boolean" and v~=state then
+                state=v
+                animate(state)
+                if callback then pcall(callback, state) end
+            end
+        end,
+        Get = function() return state end
+    }
 end
 
--- Open Button
-local toggleBtn = Instance.new("ImageButton", gui)
-toggleBtn.Name = "HoverButton"
-toggleBtn.Size = UDim2.new(0, 55, 0, 55)
-toggleBtn.Position = UDim2.new(0, 10, 0.2, 0)
-toggleBtn.Image = "rbxassetid://121962590520433"
-toggleBtn.BackgroundTransparency = 0.7
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 9)
-local stroke = Instance.new("UIStroke", toggleBtn)
-stroke.Thickness = 2
-stroke.Color = Color3.fromRGB(255, 255, 255)
-stroke.Transparency = 0.3
-toggleBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
-end)
+--Toggle Button
+local autoFarmToggle = AddToggle(mainTab, {
+    Name = "Auto Farm",
+    Callback = function(on)
+        print("[FaDhen UI] Auto Farm " .. (on and "AKTIF" or "MATI"))
+    end,
+})
 
--- HOTKEY
+local nightVisionToggle = AddToggle(visualTab, {
+    Name = "NightVision",
+    Callback = function(on)
+        print("[FaDhen UI] NightVision " .. (on and "AKTIF" or "MATI"))
+    end,
+})
+
+local autoKillToggle = AddToggle(miscTab, {
+    Name = "Auto Kill",
+    Callback = function(on)
+        print("[FaDhen UI] Auto Kill " .. (on and "AKTIF" or "MATI"))
+    end,
+})
+
+-- HOTKEY SHOW/HIDE (RightShift)
 UIS.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.RightShift then
@@ -241,15 +279,85 @@ UIS.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- Library Object
-local Library = {
-    MainFrame = mainFrame,
-    Tabs = {Main = mainTab, Visual = visualTab, Misc = miscTab},
-    AddToggle = function(_, tabName, data)
-        local tab = tabs[tabName]
-        if not tab then warn("Tab '"..tabName.."' tidak ada") return end
-        return AddToggle(tab, data)
-    end
-}
+-- =========================================
+-- Open Button (luar) - TETAP LOGIC ASLI
+-- + Drag Manual (tambahan, non-breaking)
+-- =========================================
+local toggleBtn = Instance.new("ImageButton", gui)
+toggleBtn.Name = "HoverButton"
+toggleBtn.Size = UDim2.new(0, 55, 0, 55)
+toggleBtn.Position = UDim2.new(0, 10, 0.2, 0)
+toggleBtn.Image = "rbxassetid://121962590520433"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.BackgroundTransparency = 0.7
+toggleBtn.Active = true
+toggleBtn.Draggable = true -- tetap; beberapa exploit/versi masih hormati ini
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 9)
+local stroke = Instance.new("UIStroke")
+stroke.Parent = toggleBtn
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.Transparency = 0.3 
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-return Library
+toggleBtn.MouseEnter:Connect(function()
+    TweenService:Create(toggleBtn, TweenInfo.new(0.15), {Size = UDim2.new(0, 60, 0, 60)}):Play()
+end)
+toggleBtn.MouseLeave:Connect(function()
+    TweenService:Create(toggleBtn, TweenInfo.new(0.15), {Size = UDim2.new(0, 55, 0, 55)}):Play()
+end)
+
+local isOpen = false -- default tertutup
+toggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    mainFrame.Visible = isOpen
+end)
+
+-- ========= Drag Manual Tambahan =========
+-- (tidak mengganti logic click di atas; hanya menambah kemampuan geser)
+do
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        toggleBtn.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+
+    toggleBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = toggleBtn.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    toggleBtn.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+end
+-- ========= END Drag Manual =========
+
+-- Tab default tetap Main
+setActiveTab("Main")
