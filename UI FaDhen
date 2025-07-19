@@ -250,26 +250,7 @@ local function AddToggle(tab, data)
 end
 
 --Toggle Button
-local autoFarmToggle = AddToggle(mainTab, {
-    Name = "Auto Farm",
-    Callback = function(on)
-        print("[FaDhen UI] Auto Farm " .. (on and "AKTIF" or "MATI"))
-    end,
-})
 
-local nightVisionToggle = AddToggle(visualTab, {
-    Name = "NightVision",
-    Callback = function(on)
-        print("[FaDhen UI] NightVision " .. (on and "AKTIF" or "MATI"))
-    end,
-})
-
-local autoKillToggle = AddToggle(miscTab, {
-    Name = "Auto Kill",
-    Callback = function(on)
-        print("[FaDhen UI] Auto Kill " .. (on and "AKTIF" or "MATI"))
-    end,
-})
 
 -- HOTKEY SHOW/HIDE (RightShift)
 UIS.InputBegan:Connect(function(input, gp)
