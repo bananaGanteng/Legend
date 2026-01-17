@@ -5,7 +5,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 -- ===============================
--- GUI TOGGLE (TIDAK TERHAPUS SAAT RESPAWN)
+-- GUI TOGGLE (PERSISTENT)
 -- ===============================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PersistentToggleGui"
@@ -13,7 +13,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
 -- ===============================
--- TOMBOL OPEN (PUNYA KAMU)
+-- TOGGLE BUTTON (PUNYA KAMU)
 -- ===============================
 local toggleBtn = Instance.new("ImageButton")
 toggleBtn.Name = "HoverButton"
@@ -26,10 +26,12 @@ toggleBtn.Active = true
 toggleBtn.Draggable = true
 toggleBtn.Parent = ScreenGui
 
-local toggleCorner = Instance.new("UICorner", toggleBtn)
+local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 9)
+toggleCorner.Parent = toggleBtn
 
-local stroke = Instance.new("UIStroke", toggleBtn)
+local stroke = Instance.new("UIStroke")
+stroke.Parent = toggleBtn
 stroke.Thickness = 3
 stroke.Color = Color3.fromRGB(255, 255, 255)
 stroke.Transparency = 0.5
@@ -50,7 +52,7 @@ end)
 -- ===============================
 -- AUTO DETECT CanvasGroup + HAPUS blurEffect
 -- ===============================
-local targetCanvasGroup = nil
+local targetCanvasGroup
 local isOpen = false
 
 local function tryFindTarget()
@@ -72,7 +74,7 @@ local function tryFindTarget()
     targetCanvasGroup = cg
 end
 
--- LOOP AMAN (menunggu GUI datang kapan pun)
+-- LOOP AMAN (TETAP HIDUP)
 task.spawn(function()
     while true do
         if not targetCanvasGroup or not targetCanvasGroup.Parent then
@@ -83,7 +85,7 @@ task.spawn(function()
 end)
 
 -- ===============================
--- OPEN / CLOSE (TETAP BEKERJA)
+-- OPEN / CLOSE
 -- ===============================
 toggleBtn.MouseButton1Click:Connect(function()
     if not targetCanvasGroup then return end
@@ -95,6 +97,11 @@ toggleBtn.MouseButton1Click:Connect(function()
     targetCanvasGroup.Interactable = isOpen
 end)
 
-
-
-  loadstring(game:HttpGet("https://raw.githubusercontent.com/osakaTP2/OsakaTP2/main/Escape%20Tsunami%20For%20BrainrotsV3"))()
+-- ===============================
+-- LOADSTRING OSAKATP2 (YANG KAMU MAU)
+-- ===============================
+pcall(function()
+    loadstring(game:HttpGet(
+        "https://raw.githubusercontent.com/osakaTP2/OsakaTP2/main/Escape%20Tsunami%20For%20BrainrotsV3"
+    ))()
+end)
