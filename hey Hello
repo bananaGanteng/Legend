@@ -34,6 +34,7 @@ local gui = Instance.new("ScreenGui", CoreGui)
 gui.Name = "PremiumDeliveryGUI"
 gui.ResetOnSpawn = false
 
+-- GUI UTAMA
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 176, 0, 104)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -69,6 +70,20 @@ toggleBtn.Text = "▶ Start"
 toggleBtn.AutoButtonColor = false
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,6)
 
+-- ================= TEXT TENGAH LAYAR =================
+local centerText = Instance.new("TextLabel")
+centerText.Parent = gui
+centerText.Size = UDim2.new(0, 420, 0, 50)
+centerText.Position = UDim2.new(0.5, 0, 0.5, 0)
+centerText.AnchorPoint = Vector2.new(0.5, 0.5)
+centerText.BackgroundTransparency = 1
+centerText.Text = "please waiting RadioActive Starting"
+centerText.TextColor3 = Color3.fromRGB(255,170,0)
+centerText.Font = Enum.Font.GothamBold
+centerText.TextSize = 20
+centerText.TextStrokeTransparency = 0.4
+centerText.Visible = false
+
 -- Hover
 toggleBtn.MouseEnter:Connect(function()
 	toggleBtn.BackgroundColor3 = Color3.fromRGB(60,60,90)
@@ -95,8 +110,11 @@ end
 task.spawn(function()
 	while true do
 		if active and humanoidRootPart then
+			local foundModel = false
+
 			for _, model in ipairs(EventFolder:GetChildren()) do
 				if model:IsA("Model") then
+					foundModel = true
 					local part = getModelPart(model)
 					if part then
 						model:SetPrimaryPartCFrame(
@@ -105,7 +123,12 @@ task.spawn(function()
 					end
 				end
 			end
+
+			centerText.Visible = not foundModel
+		else
+			centerText.Visible = false
 		end
+
 		task.wait(PullDelay)
 	end
 end)
