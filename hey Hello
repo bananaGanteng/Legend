@@ -1,38 +1,16 @@
--- Hapus GUI lama jika ada
+-- ================= GUI PALING AWAL (PASTI MUNCUL) =================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
 pcall(function()
-	game.CoreGui:FindFirstChild("PremiumDeliveryGUI"):Destroy()
+	player.PlayerGui:FindFirstChild("PremiumDeliveryGUI"):Destroy()
 end)
 
--- SERVICES
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-
-local player = Players.LocalPlayer
-local character, humanoidRootPart
-
--- FOLDER TARGET
-local EventFolder = workspace:WaitForChild("EventParts")
-
--- SETTINGS
-local PullDelay = 0.1
-local HeightOffset = 3
-local active = false
-
--- ================= CHARACTER HANDLER =================
-local function setupCharacter(char)
-	character = char
-	humanoidRootPart = char:WaitForChild("HumanoidRootPart")
-end
-
-if player.Character then
-	setupCharacter(player.Character)
-end
-player.CharacterAdded:Connect(setupCharacter)
-
--- ================= GUI =================
-local gui = Instance.new("ScreenGui", CoreGui)
+local gui = Instance.new("ScreenGui")
 gui.Name = "PremiumDeliveryGUI"
 gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 176, 0, 104)
@@ -74,27 +52,54 @@ toggleBtn.MouseEnter:Connect(function()
 	toggleBtn.BackgroundColor3 = Color3.fromRGB(60,60,90)
 end)
 toggleBtn.MouseLeave:Connect(function()
-	if active then
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(0,200,120)
-	else
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(45,45,65)
+	toggleBtn.BackgroundColor3 = toggleBtn.Text == "■ Stop"
+		and Color3.fromRGB(0,200,120)
+		or Color3.fromRGB(45,45,65)
+end)
+
+-- ================= LOGIC BARU JALAN SETELAH GUI =================
+
+local character, humanoidRootPart
+local EventFolder = nil
+
+local PullDelay = 0.1
+local HeightOffset = 3
+local active = false
+
+-- Character handler (aman)
+local function setupCharacter(char)
+	character = char
+	humanoidRootPart = char:WaitForChild("HumanoidRootPart", 10)
+end
+
+if player.Character then
+	setupCharacter(player.Character)
+end
+player.CharacterAdded:Connect(setupCharacter)
+
+-- Cari EventParts TANPA BLOKIR GUI
+task.spawn(function()
+	while not EventFolder do
+		EventFolder = workspace:FindFirstChild("EventParts")
+		task.wait(1)
 	end
 end)
 
--- ================= MODEL FUNCTION =================
+-- Model part
 local function getModelPart(model)
 	if model.PrimaryPart then return model.PrimaryPart end
 	for _, v in ipairs(model:GetDescendants()) do
 		if v:IsA("BasePart") then
+			model.PrimaryPart = v
 			return v
 		end
 	end
 end
 
--- ================= LOOP TARIK MODEL =================
+-- Loop tarik model
 task.spawn(function()
 	while true do
-		if active and humanoidRootPart then
+		if active and humanoidRootPart and EventFolder then
 			for _, model in ipairs(EventFolder:GetChildren()) do
 				if model:IsA("Model") then
 					local part = getModelPart(model)
@@ -110,14 +115,11 @@ task.spawn(function()
 	end
 end)
 
--- ================= BUTTON LOGIC =================
+-- Button logic
 toggleBtn.MouseButton1Click:Connect(function()
 	active = not active
-	if active then
-		toggleBtn.Text = "■ Stop"
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(0,200,120)
-	else
-		toggleBtn.Text = "▶ Start"
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(45,45,65)
-	end
+	toggleBtn.Text = active and "■ Stop" or "▶ Start"
+	toggleBtn.BackgroundColor3 = active
+		and Color3.fromRGB(0,200,120)
+		or Color3.fromRGB(45,45,65)
 end)
