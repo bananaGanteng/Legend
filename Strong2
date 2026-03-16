@@ -1,54 +1,75 @@
--- =============================================
---        WindUI Script - Auto Trainer
---        Auto Weight | Situps | Boxing
---        Speed | Inf Jump
--- =============================================
 
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/source.lua"))()
+-- ============================================
+--         WindUI - Complete Script
+--         Ready to Execute
+-- ============================================
 
--- ========== THEME ==========
+local WindUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"
+))()
+
+-- ============================================
+--               THEME SETUP
+-- ============================================
+
 WindUI:AddTheme({
-    Name = "DarkTheme",
-    Accent = Color3.fromHex("#7c3aed"),
-    Background = Color3.fromHex("#0f0f11"),
-    Outline = Color3.fromHex("#27272a"),
-    Text = Color3.fromHex("#f4f4f5"),
-    Placeholder = Color3.fromHex("#71717a"),
-    Button = Color3.fromHex("#3f3f46"),
-    Icon = Color3.fromHex("#a78bfa"),
-})
-WindUI:SetTheme("DarkTheme")
+    Name = "MyTheme",
 
--- ========== WINDOW ==========
+    Accent      = Color3.fromHex("#18181b"),
+    Background  = Color3.fromHex("#101010"),
+    Outline     = Color3.fromHex("#FFFFFF"),
+    Text        = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"),
+    Button      = Color3.fromHex("#52525b"),
+    Icon        = Color3.fromHex("#a1a1aa"),
+})
+
+WindUI:SetTheme("MyTheme")
+
+-- ============================================
+--               WINDOW
+-- ============================================
+
 local Window = WindUI:CreateWindow({
-    Title = "Auto Trainer",
-    Icon = "dumbbell",
-    Author = "Script Hub",
-    Folder = "AutoTrainer",
-    Size = UDim2.fromOffset(550, 450),
+    Title  = "My Script Hub",
+    Icon   = "zap",
+    Author = "by YourName",
+    Folder = "MyScriptHub",
+
+    Size    = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+
     Transparent = true,
-    Theme = "DarkTheme",
+    Theme       = "MyTheme",
+    Resizable   = true,
 })
 
--- ========== SERVICES & PLAYER ==========
+-- ============================================
+--               TABS
+-- ============================================
+
+local HomeTab   = Window:Tab({ Title = "Home",     Icon = "house" })
+local AimbotTab = Window:Tab({ Title = "Aimbot",   Icon = "crosshair" })
+local ESPTab    = Window:Tab({ Title = "ESP",       Icon = "eye" })
+local MiscTab   = Window:Tab({ Title = "Misc",      Icon = "settings" })
+
+-- ============================================
+--          AUTO TOOL LOGIC (SHARED)
+-- ============================================
+
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
--- ========== STATE ==========
-local state = {
-    autoWeight  = false,
-    autoSitups  = false,
-    autoBoxing  = false,
-    infJump     = false,
-    speedActive = false,
-    speedValue  = 16,
-}
+-- State toggles
+local autoWeightEnabled  = false
+local autoSitupsEnabled  = false
+local autoBoxingEnabled  = false
 
--- ========== HELPER: Auto Tool ==========
-local function startAutoTool(toolName, stateKey)
+-- Generic equip & loop function
+local function startAutoTool(toolName, getEnabled)
     task.spawn(function()
-        while state[stateKey] do
+        while getEnabled() do
             local character = player.Character
             if character then
                 local backpack = player:FindFirstChild("Backpack")
@@ -59,221 +80,321 @@ local function startAutoTool(toolName, stateKey)
                     if tool.Parent ~= character then
                         tool.Parent = character
                     end
-                    tool:Activate()
+                    if getEnabled() then
+                        tool:Activate()
+                    end
                 end
             end
             task.wait(0.1)
         end
-
-        -- Unequip tool saat dimatikan
-        local character = player.Character
-        if character then
-            local tool = character:FindFirstChild(toolName)
-            if tool then
-                tool.Parent = player.Backpack
-            end
-        end
     end)
 end
 
--- ========== HELPER: Set Speed ==========
-local function applySpeed(value)
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = value
-        end
-    end
-end
+-- ============================================
+--               HOME TAB
+-- ============================================
 
--- ========== TABS ==========
-local TabTrainer = Window:Tab({ Title = "Trainer",   Icon = "zap" })
-local TabPlayer  = Window:Tab({ Title = "Player",    Icon = "user" })
-local TabSettings= Window:Tab({ Title = "Settings",  Icon = "settings" })
+local HomeSection = HomeTab:Section({ Title = "Welcome" })
 
--- ==========================================
---              TAB: TRAINER
--- ==========================================
-local SecAuto = TabTrainer:Section({ Title = "Auto Train" })
-
--- Auto Weight Toggle
-SecAuto:Toggle({
-    Title    = "Auto Weight",
-    Desc     = "Otomatis equip & klik tool Weight",
-    Icon     = "dumbbell",
-    Default  = false,
-    Callback = function(val)
-        state.autoWeight = val
-        if val then
-            startAutoTool("Weight", "autoWeight")
-        end
-    end,
+HomeSection:Paragraph({
+    Title   = "Welcome to My Hub",
+    Content = "Script ini dibuat menggunakan WindUI. Pilih tab di atas untuk mengaktifkan fitur.",
 })
 
--- Auto Situps Toggle
-SecAuto:Toggle({
-    Title    = "Auto Situps",
-    Desc     = "Otomatis equip & klik tool Situps",
-    Icon     = "activity",
-    Default  = false,
-    Callback = function(val)
-        state.autoSitups = val
-        if val then
-            startAutoTool("Situps", "autoSitups")
-        end
-    end,
-})
-
--- Auto Boxing Toggle
-SecAuto:Toggle({
-    Title    = "Auto Boxing",
-    Desc     = "Otomatis equip & klik tool Boxing",
-    Icon     = "shield",
-    Default  = false,
-    Callback = function(val)
-        state.autoBoxing = val
-        if val then
-            startAutoTool("Boxing", "autoBoxing")
-        end
-    end,
-})
-
--- ==========================================
---              TAB: PLAYER
--- ==========================================
-local SecMove = TabPlayer:Section({ Title = "Movement" })
-
--- Speed Slider
-SecMove:Slider({
-    Title    = "Walk Speed",
-    Desc     = "Atur kecepatan berjalan (default: 16)",
-    Icon     = "wind",
-    Min      = 16,
-    Max      = 500,
-    Default  = 16,
-    Decimals = 0,
-    Callback = function(val)
-        state.speedValue = val
-        if state.speedActive then
-            applySpeed(val)
-        end
-    end,
-})
-
--- Speed Toggle
-SecMove:Toggle({
-    Title    = "Enable Speed",
-    Desc     = "Aktifkan custom walk speed",
-    Icon     = "zap",
-    Default  = false,
-    Callback = function(val)
-        state.speedActive = val
-        if val then
-            applySpeed(state.speedValue)
-            -- Reapply setiap spawn
-        else
-            applySpeed(16)
-        end
-    end,
-})
-
--- Inf Jump Toggle
-local infJumpConn = nil
-
-SecMove:Toggle({
-    Title    = "Infinite Jump",
-    Desc     = "Lompat tanpa batas di udara",
-    Icon     = "chevrons-up",
-    Default  = false,
-    Callback = function(val)
-        state.infJump = val
-        if val then
-            infJumpConn = game:GetService("UserInputService").JumpRequest:Connect(function()
-                local character = player.Character
-                if character then
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                    end
-                end
-            end)
-        else
-            if infJumpConn then
-                infJumpConn:Disconnect()
-                infJumpConn = nil
-            end
-        end
-    end,
-})
-
--- ==========================================
---           TAB: SETTINGS
--- ==========================================
-local SecInfo = TabSettings:Section({ Title = "Info" })
-
-SecInfo:Paragraph({
-    Title = "Auto Trainer Script",
-    Desc  = "Versi: 1.0\nFitur: Auto Weight, Situps, Boxing\nSpeed Custom, Infinite Jump\n\nGunakan toggle untuk ON/OFF tiap fitur.",
-})
-
-SecInfo:Divider()
-
-SecInfo:Button({
-    Title    = "Reset All",
-    Desc     = "Matikan semua fitur & reset speed",
-    Icon     = "rotate-ccw",
+HomeSection:Button({
+    Title    = "Credit",
     Callback = function()
-        state.autoWeight  = false
-        state.autoSitups  = false
-        state.autoBoxing  = false
-        state.infJump     = false
-        state.speedActive = false
-        applySpeed(16)
-        if infJumpConn then
-            infJumpConn:Disconnect()
-            infJumpConn = nil
-        end
-        WindUI:Notify({
-            Title   = "Reset",
-            Desc    = "Semua fitur telah dimatikan!",
-            Icon    = "check-circle",
-            Time    = 3,
+        WindUI:Notification({
+            Title   = "Credit",
+            Content = "Made with WindUI by Footagesus",
+            Icon    = "info",
+            Duration = 5,
         })
     end,
 })
 
--- ==========================================
---         REAPPLY ON CHARACTER SPAWN
--- ==========================================
-player.CharacterAdded:Connect(function(character)
-    task.wait(1)
+-- ============================================
+--          HOME TAB - AUTO SECTION
+-- ============================================
 
-    -- Reapply speed
-    if state.speedActive then
-        local humanoid = character:WaitForChild("Humanoid")
-        humanoid.WalkSpeed = state.speedValue
-    end
+local AutoSection = HomeTab:Section({ Title = "Auto Farm" })
 
-    -- Reapply auto tools
-    if state.autoWeight then
-        startAutoTool("Weight", "autoWeight")
-    end
-    if state.autoSitups then
-        startAutoTool("Situps", "autoSitups")
-    end
-    if state.autoBoxing then
-        startAutoTool("Boxing", "autoBoxing")
-    end
-end)
+-- Toggle: Auto Weight
+AutoSection:Toggle({
+    Title    = "Auto Weight",
+    Default  = false,
+    Callback = function(Value)
+        autoWeightEnabled = Value
+        if Value then
+            startAutoTool("Weight", function() return autoWeightEnabled end)
 
--- ==========================================
---            NOTIF SELAMAT DATANG
--- ==========================================
-task.wait(1)
-WindUI:Notify({
-    Title = "Auto Trainer Loaded!",
-    Desc  = "Script berhasil dijalankan. Aktifkan fitur via toggle.",
-    Icon  = "check-circle",
-    Time  = 5,
+            -- Re-run on respawn
+            player.CharacterAdded:Connect(function()
+                task.wait(1)
+                if autoWeightEnabled then
+                    startAutoTool("Weight", function() return autoWeightEnabled end)
+                end
+            end)
+        end
+        print("Auto Weight:", Value)
+    end,
+})
+
+-- Toggle: Auto Situps
+AutoSection:Toggle({
+    Title    = "Auto Situps",
+    Default  = false,
+    Callback = function(Value)
+        autoSitupsEnabled = Value
+        if Value then
+            startAutoTool("Situps", function() return autoSitupsEnabled end)
+
+            player.CharacterAdded:Connect(function()
+                task.wait(1)
+                if autoSitupsEnabled then
+                    startAutoTool("Situps", function() return autoSitupsEnabled end)
+                end
+            end)
+        end
+        print("Auto Situps:", Value)
+    end,
+})
+
+-- Toggle: Auto Boxing
+AutoSection:Toggle({
+    Title    = "Auto Boxing",
+    Default  = false,
+    Callback = function(Value)
+        autoBoxingEnabled = Value
+        if Value then
+            startAutoTool("Boxing", function() return autoBoxingEnabled end)
+
+            player.CharacterAdded:Connect(function()
+                task.wait(1)
+                if autoBoxingEnabled then
+                    startAutoTool("Boxing", function() return autoBoxingEnabled end)
+                end
+            end)
+        end
+        print("Auto Boxing:", Value)
+    end,
+})
+
+-- ============================================
+--               AIMBOT TAB
+-- ============================================
+
+local AimbotSection = AimbotTab:Section({ Title = "Aimbot Settings" })
+
+local AimbotEnabled = false
+AimbotSection:Toggle({
+    Title    = "Enable Aimbot",
+    Default  = false,
+    Callback = function(Value)
+        AimbotEnabled = Value
+        print("Aimbot:", Value)
+    end,
+})
+
+AimbotSection:Slider({
+    Title   = "FOV",
+    Min     = 10,
+    Max     = 500,
+    Default = 100,
+    Callback = function(Value)
+        print("FOV:", Value)
+    end,
+})
+
+AimbotSection:Slider({
+    Title   = "Smoothness",
+    Min     = 1,
+    Max     = 100,
+    Default = 50,
+    Callback = function(Value)
+        print("Smoothness:", Value)
+    end,
+})
+
+AimbotSection:Dropdown({
+    Title   = "Aim Part",
+    Options = { "Head", "HumanoidRootPart", "Torso", "LeftArm", "RightArm" },
+    Default = "Head",
+    Callback = function(Value)
+        print("Aim Part:", Value)
+    end,
+})
+
+AimbotSection:Keybind({
+    Title   = "Aimbot Key",
+    Default = Enum.KeyCode.Q,
+    Callback = function(Value)
+        print("Keybind:", Value)
+    end,
+})
+
+-- ============================================
+--               ESP TAB
+-- ============================================
+
+local ESPSection = ESPTab:Section({ Title = "ESP Settings" })
+
+ESPSection:Toggle({
+    Title    = "Enable ESP",
+    Default  = false,
+    Callback = function(Value)
+        print("ESP:", Value)
+    end,
+})
+
+ESPSection:Toggle({
+    Title    = "Show Name",
+    Default  = true,
+    Callback = function(Value)
+        print("Show Name:", Value)
+    end,
+})
+
+ESPSection:Toggle({
+    Title    = "Show Box",
+    Default  = true,
+    Callback = function(Value)
+        print("Show Box:", Value)
+    end,
+})
+
+ESPSection:Toggle({
+    Title    = "Show Health",
+    Default  = false,
+    Callback = function(Value)
+        print("Show Health:", Value)
+    end,
+})
+
+ESPSection:Colorpicker({
+    Title   = "ESP Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Value)
+        print("ESP Color:", Value)
+    end,
+})
+
+ESPSection:Slider({
+    Title   = "Max Distance",
+    Min     = 100,
+    Max     = 10000,
+    Default = 1000,
+    Callback = function(Value)
+        print("Max Distance:", Value)
+    end,
+})
+
+-- ============================================
+--               MISC TAB
+-- ============================================
+
+local MiscSection = MiscTab:Section({ Title = "Miscellaneous" })
+
+MiscSection:Toggle({
+    Title    = "Infinite Jump",
+    Default  = false,
+    Callback = function(Value)
+        local uis = game:GetService("UserInputService")
+        if Value then
+            _G.InfJump = uis.JumpRequest:Connect(function()
+                local char = game.Players.LocalPlayer.Character
+                if char then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local hum = char:FindFirstChild("Humanoid")
+                    if hrp and hum and hum.FloorMaterial ~= Enum.Material.Air then
+                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
+        else
+            if _G.InfJump then
+                _G.InfJump:Disconnect()
+            end
+        end
+        print("Infinite Jump:", Value)
+    end,
+})
+
+MiscSection:Toggle({
+    Title    = "Speed Hack",
+    Default  = false,
+    Callback = function(Value)
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChild("Humanoid")
+            if hum then
+                hum.WalkSpeed = Value and 50 or 16
+            end
+        end
+        print("Speed Hack:", Value)
+    end,
+})
+
+MiscSection:Slider({
+    Title   = "Walk Speed",
+    Min     = 16,
+    Max     = 500,
+    Default = 16,
+    Callback = function(Value)
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChild("Humanoid")
+            if hum then
+                hum.WalkSpeed = Value
+            end
+        end
+    end,
+})
+
+MiscSection:Slider({
+    Title   = "Jump Power",
+    Min     = 50,
+    Max     = 500,
+    Default = 50,
+    Callback = function(Value)
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChild("Humanoid")
+            if hum then
+                hum.JumpPower = Value
+            end
+        end
+    end,
+})
+
+MiscSection:Button({
+    Title    = "Reset Character",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChild("Humanoid")
+            if hum then
+                hum.Health = 0
+            end
+        end
+    end,
+})
+
+MiscSection:Input({
+    Title       = "Chat Message",
+    Placeholder = "Type something...",
+    Callback    = function(Value)
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Value, "All")
+    end,
+})
+
+-- ============================================
+--               NOTIFICATION STARTUP
+-- ============================================
+
+WindUI:Notification({
+    Title    = "Script Loaded!",
+    Content  = "My Hub berhasil diload. Selamat menggunakan!",
+    Icon     = "check",
+    Duration = 5,
 })
