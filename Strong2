@@ -31,10 +31,10 @@ WindUI:SetTheme("MyTheme")
 -- ============================================
 
 local Window = WindUI:CreateWindow({
-    Title  = "My Script Hub",
+    Title  = "Workout Simulator 2",
     Icon   = "zap",
-    Author = "by YourName",
-    Folder = "MyScriptHub",
+    Author = "by Angelia",
+    Folder = "Workout Simulator 2",
 
     Size    = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -45,26 +45,38 @@ local Window = WindUI:CreateWindow({
     Resizable   = true,
 })
 
+Window:Open()
+
+task.wait(0.5)
+
 -- ============================================
 --               TABS
 -- ============================================
 
-local HomeTab   = Window:Tab({ Title = "Home",     Icon = "house" })
-local AimbotTab = Window:Tab({ Title = "Aimbot",   Icon = "crosshair" })
-local ESPTab    = Window:Tab({ Title = "ESP",       Icon = "eye" })
-local MiscTab   = Window:Tab({ Title = "Misc",      Icon = "settings" })
+local HomeTab = Window:Tab({ Title = "Home", Icon = "house" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings" })
 
 -- ============================================
 --          AUTO TOOL LOGIC (SHARED)
 -- ============================================
 
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local player  = Players.LocalPlayer
 
--- State toggles
-local autoWeightEnabled  = false
-local autoSitupsEnabled  = false
-local autoBoxingEnabled  = false
+local autoWeightEnabled = false
+local autoSitupsEnabled = false
+local autoBoxingEnabled = false
+
+-- Unequip tool (kembalikan ke backpack)
+local function unequipTool(toolName)
+    local character = player.Character
+    if character then
+        local tool = character:FindFirstChild(toolName)
+        if tool then
+            tool.Parent = player.Backpack
+        end
+    end
+end
 
 -- Generic equip & loop function
 local function startAutoTool(toolName, getEnabled)
@@ -85,33 +97,13 @@ local function startAutoTool(toolName, getEnabled)
                     end
                 end
             end
-            task.wait(0.1)
+            task.wait(0.01)
         end
+
+        -- ✅ Saat loop selesai (toggle OFF), langsung unequip
+        unequipTool(toolName)
     end)
 end
-
--- ============================================
---               HOME TAB
--- ============================================
-
-local HomeSection = HomeTab:Section({ Title = "Welcome" })
-
-HomeSection:Paragraph({
-    Title   = "Welcome to My Hub",
-    Content = "Script ini dibuat menggunakan WindUI. Pilih tab di atas untuk mengaktifkan fitur.",
-})
-
-HomeSection:Button({
-    Title    = "Credit",
-    Callback = function()
-        WindUI:Notification({
-            Title   = "Credit",
-            Content = "Made with WindUI by Footagesus",
-            Icon    = "info",
-            Duration = 5,
-        })
-    end,
-})
 
 -- ============================================
 --          HOME TAB - AUTO SECTION
@@ -128,7 +120,6 @@ AutoSection:Toggle({
         if Value then
             startAutoTool("Weight", function() return autoWeightEnabled end)
 
-            -- Re-run on respawn
             player.CharacterAdded:Connect(function()
                 task.wait(1)
                 if autoWeightEnabled then
@@ -136,7 +127,6 @@ AutoSection:Toggle({
                 end
             end)
         end
-        print("Auto Weight:", Value)
     end,
 })
 
@@ -156,7 +146,6 @@ AutoSection:Toggle({
                 end
             end)
         end
-        print("Auto Situps:", Value)
     end,
 })
 
@@ -176,116 +165,6 @@ AutoSection:Toggle({
                 end
             end)
         end
-        print("Auto Boxing:", Value)
-    end,
-})
-
--- ============================================
---               AIMBOT TAB
--- ============================================
-
-local AimbotSection = AimbotTab:Section({ Title = "Aimbot Settings" })
-
-local AimbotEnabled = false
-AimbotSection:Toggle({
-    Title    = "Enable Aimbot",
-    Default  = false,
-    Callback = function(Value)
-        AimbotEnabled = Value
-        print("Aimbot:", Value)
-    end,
-})
-
-AimbotSection:Slider({
-    Title   = "FOV",
-    Min     = 10,
-    Max     = 500,
-    Default = 100,
-    Callback = function(Value)
-        print("FOV:", Value)
-    end,
-})
-
-AimbotSection:Slider({
-    Title   = "Smoothness",
-    Min     = 1,
-    Max     = 100,
-    Default = 50,
-    Callback = function(Value)
-        print("Smoothness:", Value)
-    end,
-})
-
-AimbotSection:Dropdown({
-    Title   = "Aim Part",
-    Options = { "Head", "HumanoidRootPart", "Torso", "LeftArm", "RightArm" },
-    Default = "Head",
-    Callback = function(Value)
-        print("Aim Part:", Value)
-    end,
-})
-
-AimbotSection:Keybind({
-    Title   = "Aimbot Key",
-    Default = Enum.KeyCode.Q,
-    Callback = function(Value)
-        print("Keybind:", Value)
-    end,
-})
-
--- ============================================
---               ESP TAB
--- ============================================
-
-local ESPSection = ESPTab:Section({ Title = "ESP Settings" })
-
-ESPSection:Toggle({
-    Title    = "Enable ESP",
-    Default  = false,
-    Callback = function(Value)
-        print("ESP:", Value)
-    end,
-})
-
-ESPSection:Toggle({
-    Title    = "Show Name",
-    Default  = true,
-    Callback = function(Value)
-        print("Show Name:", Value)
-    end,
-})
-
-ESPSection:Toggle({
-    Title    = "Show Box",
-    Default  = true,
-    Callback = function(Value)
-        print("Show Box:", Value)
-    end,
-})
-
-ESPSection:Toggle({
-    Title    = "Show Health",
-    Default  = false,
-    Callback = function(Value)
-        print("Show Health:", Value)
-    end,
-})
-
-ESPSection:Colorpicker({
-    Title   = "ESP Color",
-    Default = Color3.fromRGB(255, 0, 0),
-    Callback = function(Value)
-        print("ESP Color:", Value)
-    end,
-})
-
-ESPSection:Slider({
-    Title   = "Max Distance",
-    Min     = 100,
-    Max     = 10000,
-    Default = 1000,
-    Callback = function(Value)
-        print("Max Distance:", Value)
     end,
 })
 
@@ -294,6 +173,27 @@ ESPSection:Slider({
 -- ============================================
 
 local MiscSection = MiscTab:Section({ Title = "Miscellaneous" })
+
+-- ✅ Anti-AFK Toggle
+local afkEnabled = false
+MiscSection:Toggle({
+    Title    = "Anti AFK",
+    Default  = false,
+    Callback = function(Value)
+        afkEnabled = Value
+        if Value then
+            task.spawn(function()
+                local VirtualUser = game:GetService("VirtualUser")
+                player.Idled:Connect(function()
+                    if afkEnabled then
+                        VirtualUser:CaptureController()
+                        VirtualUser:ClickButton2(Vector2.new())
+                    end
+                end)
+            end)
+        end
+    end,
+})
 
 MiscSection:Toggle({
     Title    = "Infinite Jump",
@@ -316,7 +216,6 @@ MiscSection:Toggle({
                 _G.InfJump:Disconnect()
             end
         end
-        print("Infinite Jump:", Value)
     end,
 })
 
@@ -331,15 +230,14 @@ MiscSection:Toggle({
                 hum.WalkSpeed = Value and 50 or 16
             end
         end
-        print("Speed Hack:", Value)
     end,
 })
 
 MiscSection:Slider({
     Title   = "Walk Speed",
-    Min     = 16,
+    Min     = 300,
     Max     = 500,
-    Default = 16,
+    Default = 300,
     Callback = function(Value)
         local char = game.Players.LocalPlayer.Character
         if char then
@@ -353,9 +251,9 @@ MiscSection:Slider({
 
 MiscSection:Slider({
     Title   = "Jump Power",
-    Min     = 50,
+    Min     = 100,
     Max     = 500,
-    Default = 50,
+    Default = 100,
     Callback = function(Value)
         local char = game.Players.LocalPlayer.Character
         if char then
@@ -394,7 +292,7 @@ MiscSection:Input({
 
 WindUI:Notification({
     Title    = "Script Loaded!",
-    Content  = "My Hub berhasil diload. Selamat menggunakan!",
+    Content  = "Angelia berhasil diload. Selamat menggunakan!",
     Icon     = "check",
     Duration = 5,
 })
